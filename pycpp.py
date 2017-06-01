@@ -40,7 +40,8 @@ class PyCPP:
         else:
             from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
             parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-            parser.add_argument('file', default='-', nargs='?', help='the source file to preprocess, or - for stdin')
+            parser.add_argument('--input-file', default='-', help='the source file to preprocess, or - for stdin')
+            parser.add_argument('--output-file', default='-', help='the output file, or - for stdout')
             parser.add_argument('--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
             parser.add_argument('--option', action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.options["key"])')
             self.args = parser.parse_args()
@@ -101,11 +102,11 @@ class PyCPP:
         self._output += txt
 
     def run(self):
-        if self.args.file == '-':
+        if self.args.input_file == '-':
             from sys import stdin
             self.parse(stdin)
         else:
-            with open(self.args.file, 'r') as f:
+            with open(self.args.input_file, 'r') as f:
                 self.parse(f)
         if self.args.mode == 'tree':
             self.print_tree()
@@ -114,7 +115,11 @@ class PyCPP:
         elif self.args.mode == 'output':
             self._output = ''
             exec(self.spool(self.root))
-            print(self._output)
+            if self.args.output_file == '-':
+                print(self._output)
+            else:
+                with open(self.args.output_file, 'w') as f:
+                    f.write(self._output)
             self._output = ''
 
 pycpp = PyCPP()
