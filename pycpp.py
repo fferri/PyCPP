@@ -34,6 +34,7 @@ class Block:
 
 class PyCPP:
     def __init__(self, args=None):
+        self.options = {}
         if args:
             self.args = args
         else:
@@ -41,8 +42,11 @@ class PyCPP:
             parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
             parser.add_argument('file', default='-', nargs='?', help='the source file to preprocess, or - for stdin')
             parser.add_argument('--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
+            parser.add_argument('--option', action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.options["key"])')
             self.args = parser.parse_args()
-
+            for s in self.args.option:
+                k, v = s.split('=', 1)
+                self.options[k] = v
         self.root = self.empty_root()
 
     def empty_root(self):
