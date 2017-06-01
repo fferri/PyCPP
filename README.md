@@ -1,6 +1,6 @@
-# pycpp - A (minimalistic) text preprocessor with Python scripting
+# PyCPP - A (minimalistic) text preprocessor with Python scripting
 
-pycpp is a text preprocessor with a syntax designed to integrate with C/C++.
+PyCPP is a text preprocessor with a syntax designed to integrate with C/C++.
 
 It supports execution of python statements, prefixed by `#py`.
 
@@ -90,8 +90,10 @@ int main(int argc, char **argv)
 
 You can also see the intermediate Python script used to generate the output (useful for debugging errors):
 
-```Python
+```text
 $ python pycpp.py --mode python test.cpp
+```
+```Python
 print('#include <iostream>'.format())
 print(''.format())
 print('using namespace std;'.format())
