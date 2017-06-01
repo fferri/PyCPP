@@ -43,7 +43,6 @@ class PyCPP:
             self.args = parser.parse_args()
 
         self.root = self.empty_root()
-        self._output = ''
 
     def empty_root(self):
         return type('Block', (), dict(header=None, items=[], tag='root', rule=None))
@@ -106,8 +105,10 @@ class PyCPP:
         elif self.args.mode == 'python':
             print(self.spool(self.root))
         elif self.args.mode == 'output':
+            self._output = ''
             exec(self.spool(self.root))
             print(self._output)
+            self._output = ''
 
 pycpp = PyCPP()
 pycpp.run()
