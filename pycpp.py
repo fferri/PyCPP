@@ -79,6 +79,8 @@ class PyCPP:
                 # it is a 'standard' line
                 line.tag = 'spool'
                 cur.items.append(Block(line))
+        if prev:
+            raise RuntimeError('line {:d}: expected "{}" to close "{}"'.format(line.no, cur.rule.close_tag, cur.tag))
 
     def spool(self, b, indent=-1, r='', spool_fn='pycpp.output'):
         if b.tag == 'spool':
