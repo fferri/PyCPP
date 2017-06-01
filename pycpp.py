@@ -14,14 +14,14 @@ block_rules = {rule.name: rule for rule in (
 
 class Line:
     def __init__(self, line):
-        from re import match
+        from re import match, sub
         self.text = line.rstrip()
         self.py = False
-        m = match('^#py\s+(([a-z]+)(.*)?)', self.text)
+        m = match(r'^#py\s+(([^\s]+)(.*)?)', self.text)
         if m:
             self.text = m.group(1)
             self.py = True
-            self.tag = m.group(2)
+            self.tag = sub(':$', '', m.group(2))
             self.rule = block_rules.get(self.tag)
 
 class Block:
