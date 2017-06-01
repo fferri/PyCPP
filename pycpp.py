@@ -40,10 +40,10 @@ class PyCPP:
         else:
             from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
             parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-            parser.add_argument('--input-file', default='-', help='the source file to preprocess, or - for stdin')
-            parser.add_argument('--output-file', default='-', help='the output file, or - for stdout')
-            parser.add_argument('--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
-            parser.add_argument('--option', action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.options["key"])')
+            parser.add_argument('-i', '--input-file', default='-', help='the source file to preprocess, or - for stdin')
+            parser.add_argument('-o', '--output-file', default='-', help='the output file, or - for stdout')
+            parser.add_argument('-m', '--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
+            parser.add_argument('-p', '--option', action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.options["key"])')
             self.args = parser.parse_args()
             for s in self.args.option:
                 k, v = s.split('=', 1)
