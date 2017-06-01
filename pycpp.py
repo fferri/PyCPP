@@ -38,7 +38,7 @@ class PyCPP:
         else:
             from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
             parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-            parser.add_argument('file', help='the source file to preprocess')
+            parser.add_argument('file', default='-', nargs='?', help='the source file to preprocess, or - for stdin')
             parser.add_argument('--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
             self.args = parser.parse_args()
 
@@ -95,8 +95,12 @@ class PyCPP:
         self._output += txt
 
     def run(self):
-        with open(self.args.file, 'r') as f:
-            self.parse(f)
+        if self.args.file == '-':
+            from sys import stdin
+            self.parse(stdin)
+        else:
+            with open(self.args.file, 'r') as f:
+                self.parse(f)
         if self.args.mode == 'tree':
             self.print_tree()
         elif self.args.mode == 'python':
