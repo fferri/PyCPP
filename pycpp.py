@@ -15,7 +15,8 @@ block_rules = {rule.name: rule for rule in (
 class Line:
     def __init__(self, line):
         from re import match, sub
-        self.text = line.rstrip()
+        self.no = 1 + line[0]
+        self.text = line[1].rstrip()
         self.py = False
         m = match(r'^#py\s+(([^\s]+)(.*)?)', self.text)
         if m:
@@ -50,7 +51,7 @@ class PyCPP:
     def parse(self, f):
         self.root = self.empty_root()
         cur, prev = self.root, []
-        for line in map(Line, f):
+        for line in map(Line, enumerate(f)):
             if line.py:
                 # begins with '#py'
                 if cur.rule and line.text == cur.rule.close_tag:
@@ -63,7 +64,7 @@ class PyCPP:
                         prev.append(cur)
                     elif cur.tag not in line.rule.follows:
                         # check for mismatch
-                        raise RuntimeError('unexpected "{}" after "{}"'.format(line.text, cur.tag))
+                        raise RuntimeError('line {:d}: unexpected "{}" after "{}"'.format(line.no, line.text, cur.tag))
                     cur = Block(line)
                     prev[-1].items.append(cur)
                 else:
