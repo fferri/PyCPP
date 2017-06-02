@@ -43,7 +43,7 @@ class PyCPP:
             parser.add_argument('-i', '--input-file', default='-', help='the source file to preprocess, or - for stdin')
             parser.add_argument('-o', '--output-file', default='-', help='the output file, or - for stdout')
             parser.add_argument('-m', '--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
-            parser.add_argument('-p', '--param', action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.params["key"])')
+            parser.add_argument('-p', '--param', default=[], action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.params["key"])')
             self.args = parser.parse_args()
             for s in self.args.param:
                 k, v = s.split('=', 1)
