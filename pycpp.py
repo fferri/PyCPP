@@ -83,10 +83,16 @@ class PyCPP:
         if prev:
             raise RuntimeError('line {:d}: expected "{}" to close "{}"'.format(line.no, cur.rule.close_tag, cur.tag))
 
+    def escape_string(self, delimiter, string):
+        return string.replace('\\', '\\\\').replace(delimiter, '\\' + delimiter).replace('\n', '\\n')
+
+    def escape_format_string(self, delimiter, string):
+        return self.escape_string(delimiter, string).replace('{', '{{').replace('}', '}}')
+
     def spool(self, b, indent=-1, r='', spool_fn='pycpp.output'):
         if b.tag == 'spool':
             v = b.header.split('`')
-            r += '{}{}(\'{}\\n\'.format({}))\n'.format(indent * 4 * ' ', spool_fn, '{}'.join(x.replace('\\', '\\\\').replace('\'', '\\\'').replace('\n', '\\n').replace('{', '{{').replace('}', '}}') for x in v[::2]), ', '.join('({})'.format(x) for x in v[1::2]))
+            r += '{}{}(\'{}\\n\'.format({}))\n'.format(indent * 4 * ' ', spool_fn, '{}'.join(self.escape_format_string("'", x) for x in v[::2]), ', '.join('({})'.format(x) for x in v[1::2]))
         else:
             if b.header: r += '{}{}\n'.format(indent * 4 * ' ', b.header)
             for i in b.items: r += self.spool(i, indent+1)
