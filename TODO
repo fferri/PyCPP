@@ -1,0 +1,3 @@
+TODO:
+
+- add command line option to add more directories to sys.path (PYTHONPATH)
