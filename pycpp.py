@@ -27,6 +27,7 @@ class Line:
 
 class Block:
     def __init__(self, line):
+        self.lineno = line.no
         self.tag = line.tag
         self.header = line.text
         self.items = []
@@ -90,11 +91,12 @@ class PyCPP:
         return self.escape_string(delimiter, string).replace('{', '{{').replace('}', '}}')
 
     def spool(self, b, indent=-1, r='', spool_fn='pycpp.output'):
+        rem = ' # line %s' % getattr(b, 'lineno', '?')
         if b.tag == 'spool':
             v = b.header.split('`')
-            r += '{}{}(\'{}\\n\'.format({}))\n'.format(indent * 4 * ' ', spool_fn, '{}'.join(self.escape_format_string("'", x) for x in v[::2]), ', '.join('({})'.format(x) for x in v[1::2]))
+            r += '{}{}(\'{}\\n\'.format({})){}\n'.format(indent * 4 * ' ', spool_fn, '{}'.join(self.escape_format_string("'", x) for x in v[::2]), ', '.join('({})'.format(x) for x in v[1::2]), rem)
         else:
-            if b.header: r += '{}{}\n'.format(indent * 4 * ' ', b.header)
+            if b.header: r += '{}{}{}\n'.format(indent * 4 * ' ', b.header, rem)
             for i in b.items: r += self.spool(i, indent+1)
         return r
 
