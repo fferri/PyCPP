@@ -8,25 +8,35 @@ It supports execution of python statements, prefixed by `#py`.
 
 ```text
 $ python pycpp.py --help
-usage: pycpp.py [-h] [--mode {tree,python,output}] file
-
-positional arguments:
-  file                  the source file to preprocess
+usage: pycpp.py [-h] [-i INPUT_FILE] [-o OUTPUT_FILE]
+                [-m {tree,python,output}] [-p key=value] [-P path]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --mode {tree,python,output}
-                        print the intermediate steps (internal data structure
-                        for "tree", or generated python script for "python")
+  -i INPUT_FILE, --input-file INPUT_FILE
+                        the source file to preprocess, or - for stdin
+  -o OUTPUT_FILE, --output-file OUTPUT_FILE
+                        the output file, or - for stdout
+  -m {tree,python,output}, --mode {tree,python,output}
+                        print output at a specific stage
+                        tree: print the internal data structure right after parsing
+                        python: print the generate python code before execution
+                        output: print the output of the generated python code
+  -p key=value, --param key=value
+                        set a value that can be read from the template (as pycpp.params["key"])
+  -P path, --python-path path
+                        additional Python module search path
 ```
 
 ## Template syntax:
 
 Lines beginning with `#py ` will be evaluated by the preprocessor.
 
-Indent is not taken into consideration. Rather, blocks such as `if`, `while`, `for` must end with a corresponding `endif`, `endwhile`, `endfor`. An `if` block can also contain a `else:` part.
+Indent is not taken into consideration. Instead, blocks such as `if`, `while`, `for` must end with a corresponding `endif`, `endwhile`, `endfor`. An `if` block can also contain many `elif` and a `else:` part.
 
 Anything else is directly executed in the output script.
+
+Any other line not beginnign with `#py ` will be copied, except parts surrounded by backticks (`\`...\``) which will be evaluated as Python expressions.
 
 ## Example:
 
