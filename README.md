@@ -14,9 +14,9 @@ usage: pycpp.py [-h] [-i INPUT_FILE] [-o OUTPUT_FILE]
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT_FILE, --input-file INPUT_FILE
-                        the source file to preprocess, or - for stdin
+                        the source file to preprocess, or - for stdin (default: -)
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
-                        the output file, or - for stdout
+                        the output file, or - for stdout (default: -)
   -m {tree,python,output}, --mode {tree,python,output}
                         print output at a specific stage
                         tree: print the internal data structure right after parsing
