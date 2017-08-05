@@ -12,8 +12,16 @@
 
 // testcase implementation 1
 #py z = '''\
-#py raise RuntimeError('failed testcase') \
+#py raise RuntimeError('failed subcase 1') \
 #py '''
+
+// testcase implementation 2
+#py pass2=False
+\
+#py pass2=True
+#py if not pass2:
+#py raise RuntimeError('failed subcase 2')
+#py endif
 
 #py def f(x):\
     y = 0\
