@@ -53,32 +53,15 @@ class Block:
 
 
 class PyCPP:
-    def __init__(self, args=None):
-        self.params = {}
-        if args:
-            self.args = args
-        else:
-            from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
-            parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
-            parser.add_argument('-i', '--input-file', default='-', help='the source file to preprocess, or - for stdin (default: -)')
-            parser.add_argument('-o', '--output-file', default='-', help='the output file, or - for stdout (default: -)')
-            parser.add_argument('-m', '--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
-            parser.add_argument('-p', '--param', default=[], action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.params["key"])')
-            parser.add_argument('-P', '--python-path', default=[], action='append', metavar='path', help='additional Python module search path')
-            self.args = parser.parse_args()
-            for s in self.args.param:
-                k, v = s.split('=', 1)
-                self.params[k] = v
-            import sys
-            for p in self.args.python_path:
-                sys.path.append(p)
+    def __init__(self, input_str='', params={}):
+        self.input_str = input_str
+        self.params = params
         self.root = Block.root()
 
-    def parse(self, f):
-        '''
-        utility for continuing lines with a trailing backslash
-        '''
         def _joinlines(lines, pre='', lineno0=1, cont=False):
+            '''
+            utility for continuing lines with a trailing backslash
+            '''
             if lines == []: return []
             line0, lines = lines[0], lines[1:]
             lineno, line = line0
@@ -87,11 +70,12 @@ class PyCPP:
             else:
                 return [(lineno0 if pre else lineno, pre+line)] + _joinlines(lines, '', lineno, False)
 
-        lines = _joinlines([(lineno, line.rstrip('\n')) for lineno, line in enumerate(f.readlines())])
+        lines = input_str.split('\n')
+        nlines = _joinlines([(lineno, line.rstrip('\n')) for lineno, line in enumerate(lines)])
 
         self.root = Block.root()
         cur, prev = self.root, []
-        for line in map(Line, lines):
+        for line in map(Line, nlines):
             if line.py:
                 # begins with '#py'
                 if cur.rule and line.text == cur.rule.close_tag:
@@ -126,7 +110,8 @@ class PyCPP:
     def escape_format_string(self, delimiter, string):
         return self.escape_string(delimiter, string).replace('{', '{{').replace('}', '}}')
 
-    def spool(self, b, indent=-1, r='', spool_fn='pycpp.output'):
+    def get_python_code(self, b=None, indent=-1, spool_fn='print', r=''):
+        if b is None: b = self.root
         rem = ' # line %s' % getattr(b, 'lineno', '?')
         if b.tag == 'spool':
             v = b.header.split('`')
@@ -134,8 +119,17 @@ class PyCPP:
         else:
             if b.header: r += '{}{}{}\n'.format(indent * 4 * ' ', b.header, rem)
             else: r += '\n'
-            for i in b.items: r += self.spool(i, indent+1)
+            for i in b.items: r += self.get_python_code(i, indent+1, spool_fn)
         return r
+
+    def get_output(self, b=None):
+        self._output = ''
+        pycpp = self
+        exec(self.get_python_code(b, spool_fn='self.output'))
+        return self._output
+
+    def output(self, txt):
+        self._output += txt
 
     def print_tree(self, b=None, indent=-1):
         if b is None: b = self.root
@@ -143,29 +137,41 @@ class PyCPP:
         for i in b.items:
             self.print_tree(i, indent + 1)
 
-    def output(self, txt):
-        self._output += txt
+if __name__ == '__main__':
+    from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
+    parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
+    parser.add_argument('-i', '--input-file', default='-', help='the source file to preprocess, or - for stdin (default: -)')
+    parser.add_argument('-o', '--output-file', default='-', help='the output file, or - for stdout (default: -)')
+    parser.add_argument('-m', '--mode', choices=['tree', 'python', 'output'], default='output', help='print output at a specific stage\ntree: print the internal data structure right after parsing\npython: print the generate python code before execution\noutput: print the output of the generated python code')
+    parser.add_argument('-p', '--param', default=[], action='append', metavar='key=value', help='set a value that can be read from the template (as pycpp.params["key"])')
+    parser.add_argument('-P', '--python-path', default=[], action='append', metavar='path', help='additional Python module search path')
+    args = parser.parse_args()
 
-    def run(self):
-        if self.args.input_file == '-':
-            from sys import stdin
-            self.parse(stdin)
+    params = {}
+    for s in args.param:
+        k, v = s.split('=', 1)
+        params[k] = v
+
+    import sys
+    for p in args.python_path:
+        sys.path.append(p)
+
+    if args.input_file == '-':
+        input_str = sys.stdin.read()
+    else:
+        with open(args.input_file, 'r') as f:
+            input_str = f.read()
+
+    pycpp = PyCPP(input_str=input_str, params=params)
+
+    if args.mode == 'tree':
+        pycpp.print_tree()
+    elif args.mode == 'python':
+        print(pycpp.get_python_code())
+    elif args.mode == 'output':
+        if args.output_file == '-':
+            print(pycpp.get_output())
         else:
-            with open(self.args.input_file, 'r') as f:
-                self.parse(f)
-        if self.args.mode == 'tree':
-            self.print_tree()
-        elif self.args.mode == 'python':
-            print(self.spool(self.root))
-        elif self.args.mode == 'output':
-            self._output = ''
-            exec(self.spool(self.root))
-            if self.args.output_file == '-':
-                print(self._output)
-            else:
-                with open(self.args.output_file, 'w') as f:
-                    f.write(self._output)
-            self._output = ''
+            with open(self.args.output_file, 'w') as f:
+                f.write(pycpp.get_output())
 
-pycpp = PyCPP()
-pycpp.run()
