@@ -74,6 +74,9 @@ class PyCPP:
         self.root = Block.root()
 
     def parse(self, f):
+        '''
+        utility for continuing lines with a trailing backslash
+        '''
         def _joinlines(lines, pre='', lineno0=0):
             if lines == []: return []
             line0, lines = lines[0], lines[1:]
