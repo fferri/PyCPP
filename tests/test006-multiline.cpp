@@ -1,5 +1,9 @@
 #include <iostream>
 
+// the next line will not be continued by pycpp because doesn't start with #py
+#define TYPE \
+    int
+
 #py x = { \
     'a': 100, \
     'b': 200 \

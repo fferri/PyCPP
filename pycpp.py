@@ -78,14 +78,14 @@ class PyCPP:
         '''
         utility for continuing lines with a trailing backslash
         '''
-        def _joinlines(lines, pre='', lineno0=1):
+        def _joinlines(lines, pre='', lineno0=1, cont=False):
             if lines == []: return []
             line0, lines = lines[0], lines[1:]
             lineno, line = line0
-            if len(line) > 0 and line[-1] == '\\':
-                return _joinlines(lines, pre+line[:-1]+'\n', lineno0 if pre else lineno)
+            if len(line) > 0 and (cont or line[0:4] == '#py ') and line[-1] == '\\':
+                return _joinlines(lines, pre+line[:-1]+'\n', lineno0 if pre else lineno, True)
             else:
-                return [(lineno0 if pre else lineno, pre+line)] + _joinlines(lines, '', lineno)
+                return [(lineno0 if pre else lineno, pre+line)] + _joinlines(lines, '', lineno, False)
 
         lines = _joinlines([(lineno, line.rstrip('\n')) for lineno, line in enumerate(f.readlines())])
 
