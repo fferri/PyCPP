@@ -4,10 +4,16 @@
 #define TYPE \
     int
 
+// the following 4 lines will be fed to python in 1 shot
 #py x = { \
     'a': 100, \
     'b': 200 \
 }
+
+// testcase implementation 1
+#py z = '''\
+#py raise RuntimeError('failed testcase') \
+#py '''
 
 #py def f(x):\
     y = 0\
