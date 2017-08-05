@@ -123,13 +123,14 @@ class PyCPP:
         return r
 
     def get_output(self, b=None):
-        self._output = ''
+        self._output_lines = []
         pycpp = self
         exec(self.get_python_code(b, spool_fn='self.output'))
-        return self._output
+        return '\n'.join(self._output_lines)
 
     def output(self, txt):
-        self._output += txt
+        if txt[-1] == '\n': txt = txt[:-1]
+        self._output_lines.append(txt)
 
     def print_tree(self, b=None, indent=-1):
         if b is None: b = self.root
