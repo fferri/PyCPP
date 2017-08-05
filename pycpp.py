@@ -28,6 +28,7 @@ class Line:
         if self.text and self.text[-1] == '\\n':
             self.text = self.text[:-1]
         self.py = False
+        self.tag = None
         if self.text[0:4] == '#py ':
             self.text = self.text[4:]
             self.py = True
@@ -96,6 +97,8 @@ class PyCPP:
                 if cur.rule and line.text == cur.rule.close_tag:
                     # cur has a rule -> it is an opened block -> pop it
                     cur = prev.pop()
+                    if line.text[:3] == 'end':
+                        cur.items.append(Block(Line((line.no, ''))))
                 elif line.rule:
                     # line rule is set -> it is the beginning of a block
                     if not line.rule.follows:
@@ -130,8 +133,8 @@ class PyCPP:
             r += '{}{}(\'{}\\n\'.format({})){}\n'.format(indent * 4 * ' ', spool_fn, '{}'.join(self.escape_format_string("'", x) for x in v[::2]), ', '.join('({})'.format(x) for x in v[1::2]), rem)
         else:
             if b.header: r += '{}{}{}\n'.format(indent * 4 * ' ', b.header, rem)
+            else: r += '\n'
             for i in b.items: r += self.spool(i, indent+1)
-            if b.header and b.tag in block_rules: r += '\n'
         return r
 
     def print_tree(self, b=None, indent=-1):
