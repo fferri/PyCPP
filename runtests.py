@@ -6,7 +6,7 @@ verbose=False
 for c in argv[1:]:
     exec(c)
 
-def runtest(name, expected_exc=None, expected_output=None):
+def runtest(name, expected_exc=None, expected_output=None, params={}):
     filename = list(iglob('tests/test*%s*' % name))
     if len(filename) < 1:
         raise RuntimeError('test not found: %s' % name)
@@ -19,7 +19,7 @@ def runtest(name, expected_exc=None, expected_output=None):
     import pycpp
     try:
         p = pycpp.PyCPP(input_str)
-        p.params['v']='nunn'
+        p.params = params
         output = p.get_output()
         if verbose:
             print(output)
@@ -42,7 +42,12 @@ def runtest(name, expected_exc=None, expected_output=None):
 
 runtest('001')
 runtest('002')
-runtest('003')
+runtest('003', None, '''struct Test {
+    int a;
+    float b;
+};
+
+''', dict(a='int', b='float'))
 runtest('004', RuntimeError)
 runtest('005', NameError)
 runtest('006')
