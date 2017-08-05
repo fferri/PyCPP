@@ -14,6 +14,8 @@ def runtest(name, expected_exc=None, expected_output=None):
         print('warning: %s matches multiple tests. running %s...' % (name, filename[0]))
     with open(filename[0], 'r') as f:
         input_str = f.read()
+    if verbose:
+        print('RUNNING TEST %s' % filename[0])
     import pycpp
     try:
         p = pycpp.PyCPP(input_str)
@@ -30,7 +32,7 @@ def runtest(name, expected_exc=None, expected_output=None):
                 exit(1)
     except Exception as e:
         if verbose:
-            print('EXCEPTION: ', e)
+            print('EXCEPTION: %s' % e)
         if expected_exc is None:
             print('error: test %s failed (was not expected to fail with %s)' % (name, type(e)))
             exit(1)
@@ -44,3 +46,4 @@ runtest('003')
 runtest('004', RuntimeError)
 runtest('005', NameError)
 runtest('006')
+print('all test passed successfully')
