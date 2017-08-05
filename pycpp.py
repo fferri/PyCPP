@@ -24,13 +24,14 @@ class Line:
     def __init__(self, line):
         from re import match, sub
         self.no = 1 + line[0]
-        self.text = line[1].rstrip()
+        self.text = line[1]
+        if self.text and self.text[-1] == '\\n':
+            self.text = self.text[:-1]
         self.py = False
-        m = match(r'^#py\s+(([^\s]+)(.*)?)', self.text)
-        if m:
-            self.text = m.group(1)
+        if self.text[0:4] == '#py ':
+            self.text = self.text[4:]
             self.py = True
-            self.tag = sub(':$', '', m.group(2))
+            self.tag = sub(':$', '', self.text.split()[0])
             self.rule = block_rules.get(self.tag)
 
 class Block:
@@ -73,9 +74,20 @@ class PyCPP:
         self.root = Block.root()
 
     def parse(self, f):
+        def _joinlines(lines, pre='', lineno0=0):
+            if lines == []: return []
+            line0, lines = lines[0], lines[1:]
+            lineno, line = line0
+            if len(line) > 0 and line[-1] == '\\':
+                return _joinlines(lines, pre+line[:-1]+'\n', lineno0 if pre else lineno)
+            else:
+                return [(lineno0 if pre else lineno, pre+line)] + _joinlines(lines, '', lineno)
+
+        lines = _joinlines([(lineno, line.rstrip('\n')) for lineno, line in enumerate(f.readlines())])
+
         self.root = Block.root()
         cur, prev = self.root, []
-        for line in map(Line, enumerate(f)):
+        for line in map(Line, lines):
             if line.py:
                 # begins with '#py'
                 if cur.rule and line.text == cur.rule.close_tag:
