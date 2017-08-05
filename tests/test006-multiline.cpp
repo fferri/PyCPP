@@ -21,7 +21,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
 #py for k, v in x.items():
-    int `k` = `half(v)`;
+    int `k` = `f(v)`;
 #py endfor
     return 0;
 }
