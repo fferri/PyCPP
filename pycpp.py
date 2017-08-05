@@ -1,4 +1,8 @@
 class Rule:
+    '''
+    A class to represent rules for matching beginning/end of blocks.
+    '''
+
     def __init__(self, name, close_tag, follows=None):
         self.name = name
         self.close_tag = close_tag
@@ -13,6 +17,10 @@ block_rules = {rule.name: rule for rule in (
 )}
 
 class Line:
+    '''
+    Abstraction for a line of text input, used by PyCPP.parse
+    '''
+
     def __init__(self, line):
         from re import match, sub
         self.no = 1 + line[0]
@@ -26,12 +34,21 @@ class Line:
             self.rule = block_rules.get(self.tag)
 
 class Block:
+    '''
+    Abstraction for a Block (line#, tag, header, children items)
+    '''
+
     def __init__(self, line):
         self.lineno = line.no
         self.tag = line.tag
         self.header = line.text
         self.items = []
         self.rule = block_rules.get(self.tag)
+
+    @staticmethod
+    def root():
+        return type('Block', (), dict(header=None, items=[], tag='root', rule=None))
+
 
 class PyCPP:
     def __init__(self, args=None):
@@ -53,13 +70,10 @@ class PyCPP:
             import sys
             for p in self.args.python_path:
                 sys.path.append(p)
-        self.root = self.empty_root()
-
-    def empty_root(self):
-        return type('Block', (), dict(header=None, items=[], tag='root', rule=None))
+        self.root = Block.root()
 
     def parse(self, f):
-        self.root = self.empty_root()
+        self.root = Block.root()
         cur, prev = self.root, []
         for line in map(Line, enumerate(f)):
             if line.py:
@@ -102,6 +116,7 @@ class PyCPP:
         else:
             if b.header: r += '{}{}{}\n'.format(indent * 4 * ' ', b.header, rem)
             for i in b.items: r += self.spool(i, indent+1)
+            if b.header: r += '\n'
         return r
 
     def print_tree(self, b=None, indent=-1):
