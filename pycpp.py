@@ -77,7 +77,7 @@ class PyCPP:
         '''
         utility for continuing lines with a trailing backslash
         '''
-        def _joinlines(lines, pre='', lineno0=0):
+        def _joinlines(lines, pre='', lineno0=1):
             if lines == []: return []
             line0, lines = lines[0], lines[1:]
             lineno, line = line0
@@ -131,7 +131,7 @@ class PyCPP:
         else:
             if b.header: r += '{}{}{}\n'.format(indent * 4 * ' ', b.header, rem)
             for i in b.items: r += self.spool(i, indent+1)
-            if b.header: r += '\n'
+            if b.header and b.tag in block_rules: r += '\n'
         return r
 
     def print_tree(self, b=None, indent=-1):
