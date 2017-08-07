@@ -20,7 +20,7 @@ optional arguments:
   -m {tree,python,output}, --mode {tree,python,output}
                         print output at a specific stage
                         tree: print the internal data structure right after parsing
-                        python: print the generate python code before execution
+                        python: print the generated python code before execution
                         output: print the output of the generated python code
   -p key=value, --param key=value
                         set a value that can be read from the template (as pycpp.params["key"])
