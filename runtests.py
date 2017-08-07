@@ -16,6 +16,7 @@ def readfile(n, prefix, strip=False):
         return {False: lambda x: x, True: lambda x: x.strip()}[strip](f.read())
 
 def runtest(name):
+    testdir = list(iglob('tests/*%s*' % name))[0]
     input_str = readfile(name, 'input*')
     if input_str is None:
         raise RuntimeError('test not found: %s' % name)
@@ -39,6 +40,7 @@ def runtest(name):
     import pycpp
     try:
         p = pycpp.PyCPP(input_str)
+        p.add_include_path(testdir)
         p.params = params
         output = p.get_output()
         if verbose:
