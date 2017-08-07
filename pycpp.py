@@ -54,6 +54,21 @@ class Block:
     def root():
         return type('Block', (), dict(header=None, items=[], tag='root', rule=None))
 
+class line_continuation_adapter:
+    def __init__(self, iterable): self.iterable = iterable
+    def __iter__(self): return self
+    def __next__(self):
+        lineno0, line = self.iterable.next(); line = line.rstrip('\n')
+        ret, cont = line, False
+        try:
+            while (cont or line.startswith('#py ')) and line.endswith('\\'):
+                ret, cont = ret[:-1] + '\n', True
+                lineno, line = self.iterable.next(); line = line.rstrip('\n')
+                ret += line
+        except StopIteration:
+            pass
+        return lineno0, ret
+    def next(self): return self.__next__()
 
 class PyCPP:
     def __init__(self, input_str='', params={}):
@@ -63,32 +78,8 @@ class PyCPP:
 
         self.root = Block.root()
 
-        def _joinlines(lines):
-            '''
-            utility for continuing lines with a trailing backslash
-            '''
-            nlines = []
-            cont = False
-            orig_lineno, buf = -1, []
-            for lineno, line in lines:
-                if cont:
-                    if len(line) > 0 and line[-1] == '\\':
-                        buf.append(line[:-1])
-                    else:
-                        buf.append(line)
-                        nlines.append((orig_lineno, '\n'.join(buf)))
-                        orig_lineno, buf = -1, []
-                        cont = False
-                else:
-                    if line[0:4] == '#py ' and len(line) > 0 and line[-1] == '\\':
-                        cont = True
-                        orig_lineno, buf = lineno, [line[:-1]]
-                    else:
-                        nlines.append((lineno, line))
-            return nlines
-
         lines = input_str.split('\n')
-        nlines = _joinlines(enumerate(lines))
+        nlines = line_continuation_adapter(enumerate(lines))
 
         self.root = Block.root()
         cur, prev = self.root, []
