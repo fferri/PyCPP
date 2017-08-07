@@ -158,7 +158,7 @@ class PyCPP:
     def add_include_path(self, path):
         self.include_path.append(path)
 
-    def include(self, template_file):
+    def include(self, template_file, params={}):
         def resolve_file(path):
             for incpath in self.include_path:
                 fullpath = os.path.join(incpath, path)
@@ -169,7 +169,14 @@ class PyCPP:
         template_file = resolve_file(template_file)
         with open(template_file, 'r') as f:
             template = f.read()
-        pycpp_ = PyCPP(input_str=template, params=self.params)
+
+        params_ = {}
+        for k, v in self.params.items():
+            params_[k] = v
+        for k, v in params.items():
+            params_[k] = v
+
+        pycpp_ = PyCPP(input_str=template, params=params_)
         self.output(pycpp_.get_output())
 
 if __name__ == '__main__':
