@@ -1,3 +1,6 @@
+import os
+import sys
+
 class Rule:
     '''
     A class to represent rules for matching beginning/end of blocks.
@@ -56,6 +59,8 @@ class PyCPP:
     def __init__(self, input_str='', params={}):
         self.input_str = input_str
         self.params = params
+        self.include_path = []
+
         self.root = Block.root()
 
         def _joinlines(lines, pre='', lineno0=1, cont=False):
@@ -138,6 +143,23 @@ class PyCPP:
         for i in b.items:
             self.print_tree(i, indent + 1)
 
+    def add_include_path(self, path):
+        self.include_path.append(path)
+
+    def include(self, template_file):
+        def resolve_file(path):
+            for incpath in self.include_path:
+                fullpath = os.path.join(incpath, path)
+                if os.path.exists(fullpath):
+                    return fullpath
+            return path
+
+        template_file = resolve_file(template_file)
+        with open(template_file, 'r') as f:
+            template = f.read()
+        pycpp_ = PyCPP(input_str=template, params=self.params)
+        self.output(pycpp_.get_output())
+
 if __name__ == '__main__':
     from argparse import ArgumentParser, RawTextHelpFormatter, REMAINDER
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter)
@@ -153,17 +175,19 @@ if __name__ == '__main__':
         k, v = s.split('=', 1)
         params[k] = v
 
-    import sys
     for p in args.python_path:
         sys.path.append(p)
 
     if args.input_file == '-':
         input_str = sys.stdin.read()
+        include_path = '.'
     else:
         with open(args.input_file, 'r') as f:
             input_str = f.read()
+            include_path = os.path.dirname(args.input_file)
 
     pycpp = PyCPP(input_str=input_str, params=params)
+    pycpp.add_include_path(include_path)
 
     if args.mode == 'tree':
         pycpp.print_tree()
