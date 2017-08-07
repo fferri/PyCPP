@@ -63,20 +63,32 @@ class PyCPP:
 
         self.root = Block.root()
 
-        def _joinlines(lines, pre='', lineno0=1, cont=False):
+        def _joinlines(lines):
             '''
             utility for continuing lines with a trailing backslash
             '''
-            if lines == []: return []
-            line0, lines = lines[0], lines[1:]
-            lineno, line = line0
-            if len(line) > 0 and (cont or line[0:4] == '#py ') and line[-1] == '\\':
-                return _joinlines(lines, pre+line[:-1]+'\n', lineno0 if pre else lineno, True)
-            else:
-                return [(lineno0 if pre else lineno, pre+line)] + _joinlines(lines, '', lineno, False)
+            nlines = []
+            cont = False
+            orig_lineno, buf = -1, []
+            for lineno, line in lines:
+                if cont:
+                    if len(line) > 0 and line[-1] == '\\':
+                        buf.append(line[:-1])
+                    else:
+                        buf.append(line)
+                        nlines.append((orig_lineno, '\n'.join(buf)))
+                        orig_lineno, buf = -1, []
+                        cont = False
+                else:
+                    if line[0:4] == '#py ' and len(line) > 0 and line[-1] == '\\':
+                        cont = True
+                        orig_lineno, buf = lineno, [line[:-1]]
+                    else:
+                        nlines.append((lineno, line))
+            return nlines
 
         lines = input_str.split('\n')
-        nlines = _joinlines([(lineno, line.rstrip('\n')) for lineno, line in enumerate(lines)])
+        nlines = _joinlines(enumerate(lines))
 
         self.root = Block.root()
         cur, prev = self.root, []
