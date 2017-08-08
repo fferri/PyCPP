@@ -133,7 +133,7 @@ class PyCPP:
     def get_output(self, b=None):
         self._output_lines = []
         pycpp = self
-        exec(self.get_python_code(b, spool_fn='self.output'))
+        exec(self.get_python_code(b, spool_fn='pycpp.output'), locals())
         return '\n'.join(self._output_lines)
 
     def output(self, txt):
@@ -168,6 +168,7 @@ class PyCPP:
             params_[k] = v
 
         pycpp_ = PyCPP(input_str=template, params=params_)
+        pycpp_.include_path = self.include_path
         self.output(pycpp_.get_output())
 
 if __name__ == '__main__':
