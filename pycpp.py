@@ -207,6 +207,6 @@ if __name__ == '__main__':
         if args.output_file == '-':
             print(pycpp.get_output())
         else:
-            with open(self.args.output_file, 'w') as f:
+            with open(args.output_file, 'w') as f:
                 f.write(pycpp.get_output())
 
