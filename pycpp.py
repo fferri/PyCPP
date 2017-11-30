@@ -58,12 +58,12 @@ class line_continuation_adapter:
     def __init__(self, iterable): self.iterable = iterable
     def __iter__(self): return self
     def __next__(self):
-        lineno0, line = self.iterable.next(); line = line.rstrip('\n')
+        lineno0, line = next(self.iterable); line = line.rstrip('\n')
         ret, cont = line, False
         try:
             while (cont or line.startswith('#py ')) and line.endswith('\\'):
                 ret, cont = ret[:-1] + '\n', True
-                lineno, line = self.iterable.next(); line = line.rstrip('\n')
+                lineno, line = next(self.iterable); line = line.rstrip('\n')
                 ret += line
         except StopIteration:
             pass
